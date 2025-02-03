@@ -1,6 +1,6 @@
 spring:
   datasource:
-    url: jdbc:postgresql://localhost:5432/select_eazy?useTimezone=true&serverTimezone=UTC
+    url: jdbc:postgresql://localhost:5432/select_eazy?createDatabaseIfNotExist=true&useTimezone=true&serverTimezone=UTC
     username: postgres
     password: adm123
     driver-class-name: org.postgresql.Driver
