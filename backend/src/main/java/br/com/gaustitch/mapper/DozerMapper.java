@@ -35,6 +35,7 @@ public class DozerMapper {
             optionVOs = topic.getOptions().stream()
                 .map(option -> {
                     OptionVO optionVO = new OptionVO();
+                    optionVO.setId(option.getId()); // Adicionar o ID da opção
                     optionVO.setName(option.getName());
                     optionVO.setImageUrl(option.getImageUrl());
                     return optionVO;

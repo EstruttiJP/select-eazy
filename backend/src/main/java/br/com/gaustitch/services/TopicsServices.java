@@ -11,9 +11,12 @@ import org.springframework.transaction.annotation.Transactional;
 
 import br.com.gaustitch.data.vo.v1.OptionVO;
 import br.com.gaustitch.data.vo.v1.TopicVO;
+import br.com.gaustitch.exceptions.RequiredObjectIsNullException;
+import br.com.gaustitch.exceptions.ResourceNotFoundException;
 import br.com.gaustitch.mapper.DozerMapper;
 import br.com.gaustitch.model.Option;
 import br.com.gaustitch.model.Topic;
+import br.com.gaustitch.repositories.OptionRepository;
 import br.com.gaustitch.repositories.TopicsRepository;
 
 @Service
@@ -23,12 +26,15 @@ public class TopicsServices {
 	
 	@Autowired
     private TopicsRepository topicRepository;
+	
+	@Autowired
+    private OptionRepository optionRepository;
 
 	@Transactional
     public TopicVO create(TopicVO topicVO) {
         logger.info("Creating topic with title: "+ topicVO.getTitle());
         Topic topic = DozerMapper.toTopic(topicVO);
-        // Verificar se o tópico é privado e definir a senha
+        // Verificar se o tópico é privado
         if (topicVO.isPrivate()) {
             topic.setPassword(topicVO.getPassword());
         } else {
@@ -51,11 +57,10 @@ public class TopicsServices {
     
 	@Transactional
     public TopicVO addOptions(Long topicId, List<OptionVO> optionVOs) {
+		if (optionVOs == null) throw new RequiredObjectIsNullException();
         logger.info("Adding options to topic");
         Topic topic = topicRepository.findById(topicId)
-            .orElseThrow(() -> {
-                return new RuntimeException("Topic not found");
-            });
+        		.orElseThrow(() -> new ResourceNotFoundException("Topic not found!"));
 
         List<Option> options = new ArrayList<>();
         for (OptionVO optionVO : optionVOs) {
@@ -69,6 +74,27 @@ public class TopicsServices {
         
         return DozerMapper.toTopicVO(topic);
     }
+	
+	public OptionVO updateOption(OptionVO optionVO) {
+		if (optionVO == null) throw new RequiredObjectIsNullException();
+	    logger.info("Updating option with ID: "+ optionVO.getId());
+	    Option option = optionRepository.findById(optionVO.getId())
+	    		.orElseThrow(() -> new ResourceNotFoundException("No records found for this ID!"));
+	    option.setId(optionVO.getId());
+	    option.setName(optionVO.getName());
+	    option.setImageUrl(optionVO.getImageUrl());
+	    option = optionRepository.save(option);
+
+	    return DozerMapper.parseObject(option, OptionVO.class);
+	}
+	 
+	public void deleteOption(Long optionId) {
+	    logger.info("Deleting option with ID "+ optionId);
+	    Option option = optionRepository.findById(optionId)
+	    		.orElseThrow(() -> new ResourceNotFoundException("No records found for this ID!"));
+	    optionRepository.delete(option);
+	}
+
 	
 	// public String encryptPassword(String password) {
     //     Map<String, PasswordEncoder> encoders = new HashMap<>();
