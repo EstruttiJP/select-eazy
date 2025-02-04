@@ -4,6 +4,11 @@ import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+
+@JsonPropertyOrder({ "id", "title", "description", "startTime", "endTime", "options", "private" })
 public class TopicVO implements Serializable{
 
 	private static final long serialVersionUID = 1L;
@@ -12,8 +17,11 @@ public class TopicVO implements Serializable{
     private String description;
     private LocalDateTime startTime;
     private LocalDateTime endTime;
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private String password; // Incluir apenas se não for nulo
+    @JsonProperty("private")
     private boolean isPrivate;
-    private List<String> options;
+    private List<OptionVO> options;
     
 	public Long getId() {
 		return id;
@@ -51,11 +59,17 @@ public class TopicVO implements Serializable{
 	public void setPrivate(boolean isPrivate) {
 		this.isPrivate = isPrivate;
 	}
-	public List<String> getOptions() {
+	public List<OptionVO> getOptions() {
 		return options;
 	}
-	public void setOptions(List<String> options) {
+	public void setOptions(List<OptionVO> options) {
 		this.options = options;
+	}
+	public String getPassword() {
+		return password;
+	}
+	public void setPassword(String password) {
+		this.password = password;
 	}
 	@Override
 	public int hashCode() {
@@ -66,6 +80,7 @@ public class TopicVO implements Serializable{
 		result = prime * result + ((id == null) ? 0 : id.hashCode());
 		result = prime * result + (isPrivate ? 1231 : 1237);
 		result = prime * result + ((options == null) ? 0 : options.hashCode());
+		result = prime * result + ((password == null) ? 0 : password.hashCode());
 		result = prime * result + ((startTime == null) ? 0 : startTime.hashCode());
 		result = prime * result + ((title == null) ? 0 : title.hashCode());
 		return result;
@@ -100,6 +115,11 @@ public class TopicVO implements Serializable{
 			if (other.options != null)
 				return false;
 		} else if (!options.equals(other.options))
+			return false;
+		if (password == null) {
+			if (other.password != null)
+				return false;
+		} else if (!password.equals(other.password))
 			return false;
 		if (startTime == null) {
 			if (other.startTime != null)

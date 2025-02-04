@@ -28,25 +28,30 @@ public class TopicsServices {
     public TopicVO create(TopicVO topicVO) {
         logger.info("Creating topic with title: "+ topicVO.getTitle());
         Topic topic = DozerMapper.toTopic(topicVO);
+        // Verificar se o tópico é privado e definir a senha
+        if (topicVO.isPrivate()) {
+            topic.setPassword(topicVO.getPassword());
+        } else {
+            topic.setPassword(null);
+        }
         topic = topicRepository.save(topic);
         TopicVO result = DozerMapper.toTopicVO(topic);
         logger.info("Topic created with id: "+ result.getId());
         return result;
     }
 
-    public List<TopicVO> findAll() {
+	public List<TopicVO> findAll() {
         logger.info("Fetching all topics");
         List<Topic> topics = topicRepository.findAll();
         List<TopicVO> topicVOList = topics.stream()
-            .map(DozerMapper::toTopicVO)
+            .map(DozerMapper::toTopicVOWithoutPassword)
             .collect(Collectors.toList());
-        logger.info("Fetched "+topicVOList.size()+" topics");
         return topicVOList;
     }
-
-    @Transactional
+    
+	@Transactional
     public TopicVO addOptions(Long topicId, List<OptionVO> optionVOs) {
-        logger.info("Adding options to topic with id: "+ topicId);
+        logger.info("Adding options to topic");
         Topic topic = topicRepository.findById(topicId)
             .orElseThrow(() -> {
                 return new RuntimeException("Topic not found");
@@ -62,7 +67,30 @@ public class TopicsServices {
         topic.getOptions().addAll(options);
         topic = topicRepository.save(topic);
         
-        logger.info("Options added to topic with id: "+ topicId);
         return DozerMapper.toTopicVO(topic);
     }
+	
+	// public String encryptPassword(String password) {
+    //     Map<String, PasswordEncoder> encoders = new HashMap<>();
+
+    //     Pbkdf2PasswordEncoder pbkdf2Encoder
+    //             = new Pbkdf2PasswordEncoder(
+    //                     "", 8, 185000,
+    //                     SecretKeyFactoryAlgorithm.PBKDF2WithHmacSHA256);
+
+    //     encoders.put("pbkdf2", pbkdf2Encoder);
+    //     DelegatingPasswordEncoder passwordEncoder = new DelegatingPasswordEncoder("pbkdf2", encoders);
+    //     passwordEncoder.setDefaultPasswordEncoderForMatches(pbkdf2Encoder);
+
+    //     String encryptedPassword = passwordEncoder.encode(password);
+
+    //     return removePrefixSuffix(encryptedPassword);
+    // }
+	
+	// public static String removePrefixSuffix(String password) {
+    //     if (password != null && password.startsWith("{pbkdf2}")) {
+    //         return password.substring("{pbkdf2}".length());
+    //     }
+    //     return password;
+    // }
 }
